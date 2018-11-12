@@ -123,3 +123,149 @@ example(of: "zip") {
         print(value)
     })
 }
+
+/*
+ Don’t forget that withLatestFrom(_:) takes the data observable as a parameter, while sample(_:) takes the trigger observable as a parameter.
+ */
+example(of: "withLatestFrom") {
+    let textfield = PublishSubject<String>()
+    let button = PublishSubject<Void>()
+    
+    let observable = button.withLatestFrom(textfield)
+    
+    _ = observable.subscribe(onNext: { value in
+        print(value)
+    })
+    
+    textfield.onNext("Par")
+    textfield.onNext("Pari")
+    textfield.onNext("Paris")
+    
+    button.onNext(())
+    button.onNext(())
+}
+
+example(of: "sample") {
+    let textfield = PublishSubject<String>()
+    let button = PublishSubject<Void>()
+    
+    let observable = textfield.sample(button)
+    
+    _ = observable.subscribe(onNext: { value in
+        print(value)
+    })
+    
+    textfield.onNext("Par")
+    textfield.onNext("Pari")
+    textfield.onNext("Paris")
+    
+    button.onNext(())
+    button.onNext(())
+}
+
+example(of: "amb") {
+    let left = PublishSubject<String>()
+    let right = PublishSubject<String>()
+    
+    let observable = left.amb(right)
+    let disposable = observable.subscribe(onNext: {
+        value in print(value)
+    })
+
+    left.onNext("Lisbon")
+    right.onNext("Copenhagen")
+    left.onNext("London")
+    left.onNext("Madrid")
+    right.onNext("Vienna")
+    
+    disposable.dispose()
+}
+
+example(of: "switchLatest") {
+    let one = PublishSubject<String>()
+    let two = PublishSubject<String>()
+    let three = PublishSubject<String>()
+    
+    let source = PublishSubject<Observable<String>>()
+    
+    let observable = source.switchLatest()
+    let disposable = observable.subscribe(onNext: {
+        value in print(value)
+    })
+    
+    source.onNext(one)
+    one.onNext("Some text from sequence one")
+    two.onNext("Some text from sequence two")
+    
+    source.onNext(two)
+    two.onNext("More text from sequence two")
+    one.onNext("and also from sequence one")
+    
+    source.onNext(three)
+    two.onNext("Why don't you see me?")
+    one.onNext("I'm alone, help me")
+    three.onNext("Hey it's three. I win.")
+    
+    source.onNext(one)
+    one.onNext("Nope. It's me, one!")
+    
+    disposable.dispose()
+}
+
+example(of: "reduce") {
+    let source = Observable.of(1, 3, 5, 7, 9)
+    
+    let observable = source.reduce(0, accumulator: +)
+    
+    observable.subscribe(onNext: {
+        value in print(value)
+    })
+    /*
+        Value only when the source observable completes. Applying this operator to sequences that never complete won’t emit anything. This is a frequent source of confusion and hidden problems.
+     */
+}
+
+example(of: "scan") {
+    let source = Observable.of(1, 3, 5, 7, 9)
+    
+    let observable = source.scan(0, accumulator: +)
+    observable.subscribe(onNext: {
+        value in print(value)
+    })
+}
+
+example(of: "scan and accumulate") {
+    let source = Observable.of(1, 3, 5, 7, 9)
+    
+    let observable = source.scan(0, accumulator: +)
+    
+    observable.subscribe(onNext: {
+        value in print(value)
+    })
+}
+
+example(of: "scan and zip") {
+    let source = Observable.of(1, 3, 5, 7, 9)
+    
+    let scanObservable = source.scan(0, accumulator: +)
+    
+    let observable = Observable.zip(source, scanObservable) { value, runningTotal in
+        (value, runningTotal)
+    }
+    
+    observable.subscribe(onNext: { tuple
+        in print("Value = \(tuple.0) Total = \(tuple.1)")
+    })
+}
+
+example(of: "scan and tuple") {
+    let source = Observable.of(1, 3, 5, 7, 9)
+    
+    let observable = source.scan((0,0)) { acc, current in
+        return (current, acc.1 + current)
+    }
+    
+    observable.subscribe(onNext: { tuple
+        in print("Value = \(tuple.0) Total = \(tuple.1)")
+    })
+}
