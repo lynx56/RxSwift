@@ -67,9 +67,8 @@ class EONET {
                     let result = json as? [String: Any]
                     else { throw EOError.invalidJSON(finalURL.absoluteString)
                 }
-                
                 return result
-            }
+            }.asObservable()
         }catch {
             return Observable.empty()
         }
@@ -86,5 +85,25 @@ class EONET {
             .share(replay: 1, scope: .forever)
     }()
     
+    static func events(forLast days: Int = 360, category: EOCategory) -> Observable<[EOEvent]> {
+        let openEvents = self.events(forLast: days, closed: false, endpoint: category.endpoint)
+        let closedEvents = self.events(forLast: days, closed: true, endpoint: category.endpoint)
+        
+        return Observable.of(openEvents, closedEvents).merge().reduce([]) {
+            running, new in running + new
+        }
+    }
     
+    fileprivate static func events(forLast days: Int, closed: Bool, endpoint: String) -> Observable<[EOEvent]> {
+        return request(endpoint: eventsEndpoint, query: ["days": NSNumber(value: days),
+                                                         "status": (closed ? "closed": "open")])
+            .map { json in
+                guard let raw = json["events"] as? [[String:Any]]
+                    else {
+                        throw EOError.invalidJSON(eventsEndpoint)
+                }
+                return raw.compactMap(EOEvent.init)
+            }
+            .catchErrorJustReturn([])
+    }
 }
