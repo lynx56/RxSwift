@@ -3,9 +3,6 @@ import UIKit
 import RxSwift
 import RxCocoa
 
-
-
-// Support code -- DO NOT REMOVE
 class TimelineView<E>: TimelineViewBase, ObserverType where E: CustomStringConvertible {
   static func make() -> TimelineView<E> {
     let view = TimelineView(frame: CGRect(x: 0, y: 0, width: 400, height: 100))
@@ -23,25 +20,25 @@ class TimelineView<E>: TimelineViewBase, ObserverType where E: CustomStringConve
     }
   }
 }
-/*:
- Copyright (c) 2014-2017 Razeware LLC
- 
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
- 
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
- 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
- */
 
+let elementsPerSecond = 1
+let maxElements = 5
+let replayedElements = 1
+let replayDelay: TimeInterval = 3
+
+example(of: "") {
+    let source = Observable<Int>.create { observer in
+        let value = 1
+        let timer = DispatchSource.timer(interval: 1.0/Double(elementsPerSecond), queue: .main) {
+            if value <= maxElements {
+               observer.onNext(value)
+                value += 1
+            }
+        }
+        return Disposables.create {
+            timer.suspend()
+        }
+    }
+    
+    source.replay(replayedElements)
+}

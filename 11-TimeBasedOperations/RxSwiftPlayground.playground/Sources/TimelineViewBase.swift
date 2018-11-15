@@ -107,7 +107,7 @@ open class TimelineViewBase : UIView {
   }
   
   func detachDisplayLink() {
-    displayLink?.remove(from: RunLoop.main, forMode: .commonModes)
+    displayLink?.remove(from: RunLoop.main, forMode: RunLoop.Mode.common)
     displayLink = nil
   }
   
