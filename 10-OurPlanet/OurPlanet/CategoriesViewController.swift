@@ -30,7 +30,7 @@ class CategoriesViewController: UIViewController, UITableViewDataSource, UITable
     let categories = Variable<[EOCategory]>([])
     let disposeBag = DisposeBag()
     lazy var activityIndicator: UIActivityIndicatorView = {
-        let indicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.gray)
+        let indicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.gray)
         indicator.hidesWhenStopped = true
         
         return indicator
@@ -102,7 +102,7 @@ class CategoriesViewController: UIViewController, UITableViewDataSource, UITable
                 }
             })
         
-        Observable.combineLatest(eoCategories, events) { (categories, events) -> [EOCategory] in
+        _ = Observable.combineLatest(eoCategories, events) { (categories, events) -> [EOCategory] in
             
             return categories.map { category in
                 var cat = category

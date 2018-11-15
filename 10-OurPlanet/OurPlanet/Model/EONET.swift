@@ -51,7 +51,7 @@ class EONET {
         do {
             guard let url = URL(string: API)?.appendingPathComponent(endpoint), var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
                 else { throw EOError.invalidURL(endpoint) }
-            components.queryItems = try query.flatMap { (key, value) in
+            components.queryItems = try query.compactMap { (key, value) in
                 guard let v = value as? CustomStringConvertible
                     else { throw EOError.invalidParameter(key, value) }
                 return URLQueryItem(name: key, value: v.description)
