@@ -23,48 +23,43 @@ class TimelineView<E>: TimelineViewBase, ObserverType where E: CustomStringConve
     }
 }
 
-let elementsPerSecond = 1
-let maxElements = 9
-let replayedElements = 2
-let replayDelay: TimeInterval = 3
 
-var source = ConnectableObservable<Int>.create { observer in
-    var value = 1
-    let timer = DispatchSource.timer(interval: 1.0/Double(elementsPerSecond), queue: .main) {
-        if value <= maxElements {
-            observer.onNext(value)
-            value = value + 1
-        }
-    }
-    return Disposables.create {
-        timer.suspend()
-    }
-    }.replayAll()
 
-let sourceTimeline = TimelineView<Int>.make()
-let replayedTimeline = TimelineView<Int>.make()
+let bufferTimeSpan: RxTimeInterval = 13
+let bufferMaxCount = 2
+
+let sourceObservable = PublishSubject<String>()
+
+let sourceTimeLine = TimelineView<String>.make()
+let bufferedTimeLine = TimelineView<Int>.make()
 
 let stack = UIStackView.makeVertical([
-    UILabel.makeTitle("replay"),
-    UILabel.make("Emit \(elementsPerSecond) per second:"),
-    sourceTimeline,
-    UILabel.make("Replay \(replayedElements) after \(replayDelay) sec:"),
-    replayedTimeline
-    ])
+    UILabel.makeTitle("buffer"),
+    UILabel.make("Emitted elements:"),
+    sourceTimeLine,
+    UILabel.make("Buffered elements (at most \(bufferMaxCount) every \(bufferTimeSpan) seconds):"),
+    bufferedTimeLine
+    ]
+)
 
-_ = source.subscribe(sourceTimeline)
+_ = sourceObservable.subscribe(sourceTimeLine)
 
-DispatchQueue.main.asyncAfter(deadline: .now() + replayDelay) {
-    _ = source.subscribe(replayedTimeline)
-}
-
-
-_ = source.connect()
+sourceObservable.buffer(timeSpan: bufferTimeSpan, count: bufferMaxCount, scheduler: MainScheduler.instance)
+    .map { $0.count }
+    .subscribe(bufferedTimeLine)
 
 let hostView = setupHostView()
 hostView.addSubview(stack)
 
+DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+    sourceObservable.onNext("🐱")
+    sourceObservable.onNext("🐱")
+    sourceObservable.onNext("🐱")
+}
+
 
 PlaygroundPage.current.liveView = hostView
 PlaygroundPage.current.needsIndefiniteExecution = true
+
+
 
