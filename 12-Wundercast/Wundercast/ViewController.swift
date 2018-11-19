@@ -31,6 +31,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var humidityLabel: UILabel!
     @IBOutlet weak var iconLabel: UILabel!
     @IBOutlet weak var cityNameLabel: UILabel!
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     let disposeBag = DisposeBag()
     
@@ -40,14 +41,43 @@ class ViewController: UIViewController {
         
         style()
         
-        let search = searchCityName.rx
+        let searchInput = searchCityName.rx
             .controlEvent(.editingDidEndOnExit).asObservable()
             .map { self.searchCityName.text }
             .filter { ($0 ?? "").count > 0 }
-            .flatMap { text in
-                ApiController.shared.currentWeather(city: text ?? "Error" )
-                    .catchErrorJustReturn(ApiController.Weather.empty)
+        
+        let search = searchInput.flatMap { text in
+            return ApiController.shared.currentWeather(city: text ?? "Error" )
+                .catchErrorJustReturn(ApiController.Weather.empty)
             }.asDriver(onErrorJustReturn: ApiController.Weather.empty)
+        
+        let running = Observable.from([
+            searchInput.map { _ in true },
+            search.map { _ in false }.asObservable()
+            ])
+            .merge()
+            .startWith(true)
+            .asDriver(onErrorJustReturn: false)
+        
+        running.skip(1)
+            .drive(activityIndicator.rx.isAnimating)
+            .disposed(by: disposeBag)
+        
+        running
+            .drive(tempLabel.rx.isHidden)
+            .disposed(by: disposeBag)
+        
+        running
+            .drive(iconLabel.rx.isHidden)
+            .disposed(by: disposeBag)
+        
+        running
+            .drive(humidityLabel.rx.isHidden)
+            .disposed(by: disposeBag)
+        
+        running
+            .drive(cityNameLabel.rx.isHidden)
+            .disposed(by: disposeBag)
         
         search.map { Int($0.temperature.converted(to: .celsius).value) }
             .map { "\($0)° C" }
