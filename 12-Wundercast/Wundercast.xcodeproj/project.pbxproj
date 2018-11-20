@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		BF42025A21A1DA5D0087863B /* Private.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF42025921A1DA5D0087863B /* Private.swift */; };
+		BF42025C21A471090087863B /* CLLocationManager+rx.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF42025B21A471090087863B /* CLLocationManager+rx.swift */; };
+		BF42025E21A499330087863B /* MapKit+rx.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF42025D21A499330087863B /* MapKit+rx.swift */; };
 		CA64900EFE1D9F43973A260F /* Pods_Wundercast.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4098AFCCA291187AB4A1327B /* Pods_Wundercast.framework */; };
 		CB4D69411DE9A7D100DC0488 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB4D69401DE9A7D100DC0488 /* AppDelegate.swift */; };
 		CB4D69431DE9A7D100DC0488 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB4D69421DE9A7D100DC0488 /* ViewController.swift */; };
@@ -27,6 +29,8 @@
 		8CF08882048DB0620980ACC9 /* Pods-Wundercast.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Wundercast.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Wundercast/Pods-Wundercast.debug.xcconfig"; sourceTree = "<group>"; };
 		A8FEC475BD4840CDBFA8E9B0 /* Pods-Wundercast.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Wundercast.release.xcconfig"; path = "Pods/Target Support Files/Pods-Wundercast/Pods-Wundercast.release.xcconfig"; sourceTree = "<group>"; };
 		BF42025921A1DA5D0087863B /* Private.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Private.swift; sourceTree = "<group>"; };
+		BF42025B21A471090087863B /* CLLocationManager+rx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CLLocationManager+rx.swift"; sourceTree = "<group>"; };
+		BF42025D21A499330087863B /* MapKit+rx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MapKit+rx.swift"; sourceTree = "<group>"; };
 		CB4D693D1DE9A7D100DC0488 /* Wundercast.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wundercast.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB4D69401DE9A7D100DC0488 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CB4D69421DE9A7D100DC0488 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -97,12 +101,13 @@
 				CB4D69631DE9AD2A00DC0488 /* Controllers */,
 				CB4D69641DE9AD2A00DC0488 /* Utils */,
 				CB4D69401DE9A7D100DC0488 /* AppDelegate.swift */,
-				CB4D69421DE9A7D100DC0488 /* ViewController.swift */,
 				CB4D69441DE9A7D100DC0488 /* Main.storyboard */,
 				CB4D69471DE9A7D100DC0488 /* Assets.xcassets */,
 				CB4D69491DE9A7D100DC0488 /* LaunchScreen.storyboard */,
 				CB4D694C1DE9A7D100DC0488 /* Info.plist */,
 				BF42025921A1DA5D0087863B /* Private.swift */,
+				BF42025B21A471090087863B /* CLLocationManager+rx.swift */,
+				BF42025D21A499330087863B /* MapKit+rx.swift */,
 			);
 			path = Wundercast;
 			sourceTree = "<group>";
@@ -111,6 +116,7 @@
 			isa = PBXGroup;
 			children = (
 				CB4D69651DE9AD3300DC0488 /* ApiController.swift */,
+				CB4D69421DE9A7D100DC0488 /* ViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -254,9 +260,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				CB4D69431DE9A7D100DC0488 /* ViewController.swift in Sources */,
+				BF42025C21A471090087863B /* CLLocationManager+rx.swift in Sources */,
 				CB4D69711DE9C70100DC0488 /* Colors.swift in Sources */,
 				CB4D69411DE9A7D100DC0488 /* AppDelegate.swift in Sources */,
 				CB4D69661DE9AD3300DC0488 /* ApiController.swift in Sources */,
+				BF42025E21A499330087863B /* MapKit+rx.swift in Sources */,
 				CB4D69701DE9C70100DC0488 /* Appearance.swift in Sources */,
 				BF42025A21A1DA5D0087863B /* Private.swift in Sources */,
 			);

@@ -23,8 +23,9 @@
 import UIKit
 import RxSwift
 import RxCocoa
+import MapKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, CLLocationManagerDelegate {
     
     @IBOutlet weak var searchCityName: UITextField!
     @IBOutlet weak var tempLabel: UILabel!
@@ -32,8 +33,12 @@ class ViewController: UIViewController {
     @IBOutlet weak var iconLabel: UILabel!
     @IBOutlet weak var cityNameLabel: UILabel!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    @IBOutlet weak var mapButton: UIButton!
+    @IBOutlet weak var mapView: MKMapView!
+    @IBOutlet weak var geolocationButton: UIButton!
     
     let disposeBag = DisposeBag()
+    let locationManager = CLLocationManager()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,19 +46,66 @@ class ViewController: UIViewController {
         
         style()
         
-        let searchInput = searchCityName.rx
-            .controlEvent(.editingDidEndOnExit).asObservable()
+        let searchInput = searchCityName.rx.controlEvent(.editingDidEndOnExit).asObservable()
             .map { self.searchCityName.text }
             .filter { ($0 ?? "").count > 0 }
         
-        let search = searchInput.flatMap { text in
-            return ApiController.shared.currentWeather(city: text ?? "Error" )
+        let textSearch = searchInput.flatMap { text in
+            return ApiController.shared.currentWeather(city: text ?? "Error")
                 .catchErrorJustReturn(ApiController.Weather.empty)
-            }.asDriver(onErrorJustReturn: ApiController.Weather.empty)
+        }
+        
+        let currentLocation = locationManager.rx
+            .didUpdateLocations
+            .map { $0[0] }
+            .filter { location in
+                return location.horizontalAccuracy < kCLLocationAccuracyHundredMeters
+        }
+        
+        let geoInput = geolocationButton.rx.tap.asObservable()
+            .do(onNext: { _ in
+                self.locationManager.requestWhenInUseAuthorization()
+                self.locationManager.startUpdatingLocation()
+            })
+        
+        let mapInput = mapView.rx.regionDidChangeAnimated
+        .skip(1)
+            .map { _ in self.mapView.centerCoordinate }
+        
+        let mapSearch = mapInput
+            .flatMap { coordinate in
+                return ApiController.shared.currentWeather(latitude: coordinate.latitude, longitude: coordinate.longitude)
+                .catchErrorJustReturn(ApiController.Weather.empty)
+        }
+        
+        mapButton.rx.tap
+            .subscribe(onNext: {
+                self.mapView.isHidden = !self.mapView.isHidden
+            })
+            .disposed(by: disposeBag)
+        
+        mapView.rx.setDelegate(self)
+            .disposed(by: disposeBag)
+        
+        let geoLocation = geoInput.flatMap {
+            return currentLocation.take(1)
+        }
+        
+        let geoSearch = geoLocation
+            .flatMap { location in
+                return ApiController.shared.currentWeather(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+                    .catchErrorJustReturn(ApiController.Weather.empty) }
+        
+        let search = Observable.from([
+            geoSearch, textSearch, mapSearch])
+            .merge()
+            .asDriver(onErrorJustReturn: ApiController.Weather.empty)
         
         let running = Observable.from([
-            searchInput.map { _ in true },
-            search.map { _ in false }.asObservable()
+            textSearch.map { _ in true },
+            geoSearch.map { _ in true },
+            search.map { _ in false }.asObservable(),
+            mapInput.map { _ in true }
             ])
             .merge()
             .startWith(true)
@@ -95,6 +147,10 @@ class ViewController: UIViewController {
         search.map { $0.cityName }
             .drive(self.cityNameLabel.rx.text)
             .disposed(by: disposeBag)
+        
+        search.map { [$0.overlay()] }
+            .drive(mapView.rx.overlays)
+            .disposed(by: disposeBag)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -128,3 +184,13 @@ class ViewController: UIViewController {
     }
 }
 
+extension ViewController: MKMapViewDelegate {
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        if let overlay = overlay as? ApiController.Weather.Overlay {
+            let overlayView = ApiController.Weather.OverlayView(overlay: overlay, overlayIcon: overlay.icon)
+            return overlayView
+        }
+        
+        return MKOverlayRenderer()
+    }
+}
